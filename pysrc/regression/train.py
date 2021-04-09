@@ -83,7 +83,4 @@ if __name__ == '__main__':
         print("Error copying files, check permissions. Exiting....")
         quit()
 
-    #Start inference
-    trainer = Trainer(CFG, FLAGS.train_cfg, FLAGS.log_place)
-    trainer.train()
-
+    ##Get train and valid dataset
