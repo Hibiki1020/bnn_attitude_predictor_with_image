@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(bnn_attitude_predictor_with_image)
-
+set(CMAKE_CXX_STANDARD 14)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -8,8 +8,7 @@ project(bnn_attitude_predictor_with_image)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  opencv
-  pcl
+  pcl_ros
   roscpp
   rospy
   std_msgs

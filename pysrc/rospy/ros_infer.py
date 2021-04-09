@@ -88,7 +88,8 @@ class BnnAttitudeEstimationWithImage:
         return img_transform
 
     def getNetwork(self, resize, weights_path):
-        net = bnn_network.Network(resize, dim_fc_out=3, use_pretrained_vgg=False)
+        #VGG16を使用した場合
+        net = bnn_network.Network_VGG(resize, dim_fc_out=3, self.dropout_rate,use_pretrained_vgg=False)
         print(net)
 
         net.to(self.device)
