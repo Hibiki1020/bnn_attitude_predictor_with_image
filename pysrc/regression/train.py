@@ -118,4 +118,46 @@ if __name__ == '__main__':
         quit()
 
     ##Get train and valid dataset
-    
+    train_dataset = dataset_mod.Originaldataset(
+        data_list = make_datalist_mod.makeMultiDataList(list_train_rootpaths, csv_name),
+        transform = data_transform_mod.DataTransform(
+            resize,
+            ([mean_element, mean_element, mean_element]),
+            ([std_element, std_element, std_element]),
+            hor_fov_deg = hor_fov_deg
+        ),
+        phase = "train"
+    )
+
+    valid_dataset = dataset_mod.Originaldataset(
+        data_list = make_datalist_mod.makeMultiDataList(list_valid_rootpaths, csv_name),
+        transform = data_transform_mod.DataTransform(
+            resize,
+            ([mean_element, mean_element, mean_element]),
+            ([std_element, std_element, std_element]),
+            hor_fov_deg = hor_fov_deg
+        ),
+        phase = "valid"
+    )
+
+    ##Network
+    net = bnn_network.Network(resize, list_dim_fc_out=[100, 18, 3], dropout_rate=0.1, use_pretrained_vgg=True)
+
+    ##Criterion
+    criterion = nn.MSELoss()
+
+    #train
+    trainer = trainer_mod.Trainer(
+        method_name,
+        train_dataset,
+        valid_dataset,
+        net,
+        criterion,
+        optimizer_name,
+        lr_cnn,
+        lr_fc,
+        batch_size,
+        num_epochs
+    )
+
+    trainer.train()
