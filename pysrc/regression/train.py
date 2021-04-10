@@ -48,6 +48,7 @@ if __name__ == '__main__':
 
     FLAGS, unparsed = parser.parse_known_args()
 
+    #load yaml file
     try:
         print("Opening train config file %s", FLAGS.train_cfg)
         CFG = yaml.safe_load(open(FLAGS.train_cfg, 'r'))
@@ -55,6 +56,39 @@ if __name__ == '__main__':
         print(e)
         print("Error opening train config file %s", FLAGS.train_cfg)
         quit()
+
+    #get file paths
+    method_name = CFG["method_name"]
+    dataset_top_path = CFG["dataset_top_path"]
+    experiment_type = CFG["experiment_type"]
+    image_env = CFG["image_env"]
+    train_sequences = CFG["train"] #string
+    valid_sequences = CFG["valid"]
+    csv_name = CFG["csv_name"]
+    weights_path = CFG["weights_path"]
+
+    #get train and valid root path
+    list_train_rootpaths
+    list_valid_rootpaths
+
+    for i in train_sequences:
+        tmp_path = dataset_top_path + experiment_type + image_env + i
+        list_train_rootpaths.append(tmp_path)
+    
+    for i in valid_sequences:
+        tmp_path = dataset_top_path + experiment_type + image_env + i
+        list_valid_rootpaths.append(tmp_path)
+
+    #get hyperparameter for learning
+    resize = CFG["hyperparameter"]["resize"]
+    mean_element = CFG["hyperparameter"]["mean_element"]
+    std_element = CFG["hyperparameter"]["std_element"]
+    hor_fov_deg = CFG["hyperparameter"]["hor_fov_deg"]
+    optimizer_name = CFG["hyperparameter"]["optimizer_name"]
+    lr_cnn = CFG["hyperparameter"]["lr_cnn"]
+    lr_fc = CFG["hyperparameter"]["lr_fc"]
+    batch_size = CFG["hyperparameter"]["batch_size"]
+    num_epochs = CFG["hyperparameter"]["num_epochs"]
 
     #Create weights folder
     try:
@@ -84,3 +118,4 @@ if __name__ == '__main__':
         quit()
 
     ##Get train and valid dataset
+    
