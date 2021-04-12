@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import time
-import datatime
+#import datatime
 
 import torch
 from torchvision import models
@@ -29,8 +29,8 @@ class Trainer:
         self.device = torch.device("cuda:0" if torch.cuda.is_available else "cpu")
         print("Training Device: ", self.device)
 
-        self.data_loaders_dict = self.getDataloader(train_dataset, valid_dataset, batch_size)
-        self.net = getSetNetwork(net)
+        self.dataloaders_dict = self.getDataloader(train_dataset, valid_dataset, batch_size)
+        self.net = self.getSetNetwork(net)
         self.criterion = criterion
         self.optimizer = self.getOptimizer(optimizer_name, lr_cnn, lr_fc)
         self.num_epochs = num_epochs
@@ -62,7 +62,7 @@ class Trainer:
             shuffle = False
         )
 
-        dataloaders_dict = {"train": train_dataloader, "val": valid_dataloader}
+        dataloaders_dict = {"train":train_dataloader, "valid":valid_dataloader}
 
         return dataloaders_dict
 
@@ -93,7 +93,7 @@ class Trainer:
     def getStrHyperparameter(self, method_name, dataset, optimizer_name, lr_cnn, lr_fc, batch_size):
         str_hyperparameter = method_name \
             + str(len(self.dataloaders_dict["train"].dataset)) + "train" \
-            + str(len(self.dataloaders_dict["val"].dataset)) + "val" \
+            + str(len(self.dataloaders_dict["valid"].dataset)) + "valid" \
             + str(dataset.transform.resize) + "resize" \
             + str(dataset.transform.mean[0]) + "mean" \
             + str(dataset.transform.std[0]) + "std" \
@@ -106,6 +106,6 @@ class Trainer:
         return str_hyperparameter
     
     def train(self):
-        print("Test")
+        print("Train Debug")
 
 

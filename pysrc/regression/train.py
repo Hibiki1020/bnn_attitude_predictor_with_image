@@ -31,20 +31,20 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser("./train.py")
 
-    parser.add_argument{
+    parser.add_argument(
         '--train_cfg', '-c',
         type=str,
         required=False,
-        default='../../config/train_config.yaml'
-        help='Train hyperparameter config file'
-    }
-    parser.add_argument{
+        default='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/config/train_config.yaml',
+        help='Train hyperparameter config file',
+    )
+    parser.add_argument(
         '--log_place', '-l',
         type=str,
         required=False,
-        default='../../weights/test1'
-        help='Place to put trained file'
-    }
+        default='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/weights/test1',
+        help='Place to put trained file',
+    )
 
     FLAGS, unparsed = parser.parse_known_args()
 
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     weights_path = CFG["weights_path"]
 
     #get train and valid root path
-    list_train_rootpaths
-    list_valid_rootpaths
+    list_train_rootpaths = []
+    list_valid_rootpaths = []
 
     for i in train_sequences:
         tmp_path = dataset_top_path + experiment_type + image_env + i
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         quit()
     
     try:
-        print("Copy files to %s for further reference." % FLAGS.log)
+        print("Copy files to %s for further reference." % FLAGS.log_place)
         copyfile(FLAGS.train_cfg, FLAGS.log_place + "/train_config.yaml")
     except Exception as e:
         print(e)
@@ -141,7 +141,9 @@ if __name__ == '__main__':
     )
 
     ##Network
-    net = bnn_network.Network(resize, list_dim_fc_out=[100, 18, 3], dropout_rate=0.1, use_pretrained_vgg=True)
+    #net = bnn_network.Network(resize, list_dim_fc_out=[100, 18, 3], dropout_rate=0.1, use_pretrained_vgg=True)
+    net = bnn_network.Network(resize, dim_fc_out=3, dropout_rate=0.1, use_pretrained_vgg=True)
+
 
     ##Criterion
     criterion = nn.MSELoss()

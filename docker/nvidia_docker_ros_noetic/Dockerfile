@@ -54,7 +54,11 @@ RUN apt-get update && \
 	apt-get install -y \
 		python3-pip && \
 	pip3 install \
-		torch==1.5.0 torchvision==0.6.0
+		torch==1.5.0 torchvision==0.6.0 \
+		tqdm \
+		matplotlib \
+		tensorflow \
+		tensorboardX
 		# torch==1.0.1 torchvision==0.2.2
 ########## dnn_attitude_estimation ##########
 ##### NO cache #####
