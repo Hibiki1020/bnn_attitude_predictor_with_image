@@ -20,5 +20,5 @@ hyperparameter:
   optimizer_name: "Adam"
   lr_cnn: 1e-5
   lr_fc: 1e-4
-  batch_size: 50
-  num_epochs: 50
+  batch_size: 70
+  num_epochs: 75

@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import time
-#import datatime
+import datetime
 
 import torch
 from torchvision import models
@@ -82,7 +82,7 @@ class Trainer:
                 {"params": list_fc_param_value,  "lr": lr_fc },
             ], momentum=0.9)
         elif optimizer_name == "Adam":
-            optimizer = optim.SGD([
+            optimizer = optim.Adam([
                 {"params": list_cnn_param_value, "lr": lr_cnn},
                 {"params": list_fc_param_value,  "lr": lr_fc },
             ])
@@ -106,6 +106,89 @@ class Trainer:
         return str_hyperparameter
     
     def train(self):
-        print("Train Debug")
+        #print("Train Debug")
 
+        start_time = time.time()
 
+        #Loss Record
+        writer = SummaryWriter(logdir="../../logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S-") + self.str_hyperparameter)
+        
+        record_loss_train = []
+        record_loss_valid = []
+
+        for epoch in range(self.num_epochs):
+            print("--------------------")
+            print("Epoch {}/{}".format(epoch+1, self.num_epochs))
+
+            ##phase
+            for phase in ["train", "valid"]:
+                if phase == "train":
+                    self.net.train() #change to train mode
+                else:
+                    self.net.eval() #change to eval mode
+                
+                ##skip
+                if(epoch == 0) and (phase == "train"):
+                    continue
+
+                ## data load
+                epoch_loss = 0.0
+                for inputs, labels in tqdm(self.dataloaders_dict[phase]):
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
+                    ## reset gradient
+                    self.optimizer.zero_grad()   #reset grad to zero (after .step())
+                    ## compute gradient
+                    with torch.set_grad_enabled(phase == "train"):  #compute grad only in "train"
+                        ## forward
+                        outputs = self.net(inputs)
+                        loss = self.computeLoss(outputs, labels)
+                        ## backward
+                        if phase == "train":
+                            loss.backward()     #accumulate gradient to each Tensor
+                            self.optimizer.step()    #update param depending on current .grad
+                        ## add loss
+                        epoch_loss += loss.item() * inputs.size(0)
+                ## average loss
+                epoch_loss = epoch_loss / len(self.dataloaders_dict[phase].dataset)
+                print("{} Loss: {:.4f}".format(phase, epoch_loss))
+                ## record
+                if phase == "train":
+                    record_loss_train.append(epoch_loss)
+                    writer.add_scalar("Loss/train", epoch_loss, epoch)
+                    # for param_name, param_value in self.net.named_parameters():
+                    #     # print(param_name, ": ", param_value.grad.abs().mean())
+                    #     writer.add_scalar("Gradient/" + param_name, param_value.grad.abs().mean(), epoch)
+                else:
+                    record_loss_valid.append(epoch_loss)
+                    writer.add_scalar("Loss/valid", epoch_loss, epoch)
+            if record_loss_train and record_loss_valid:
+                writer.add_scalars("Loss/train_and_val", {"train": record_loss_train[-1], "valid": record_loss_valid[-1]}, epoch)
+        writer.close()
+        ## save
+        self.saveParam()
+        self.saveGraph(record_loss_train, record_loss_valid)
+        ## training time
+        mins = (time.time() - start_clock) // 60
+        secs = (time.time() - start_clock) % 60
+        print ("training_time: ", mins, " [min] ", secs, " [sec]")
+
+    def computeLoss(self, outputs, labels):
+        loss = self.criterion(outputs, labels)
+        return loss
+
+    def saveParam(self):
+        save_path = "../../weights/" + self.str_hyperparameter + ".pth"
+        torch.save(self.net.state_dict(), save_path)
+        print("Saved: ", save_path)
+
+    def saveGraph(self, record_loss_train, record_loss_val):
+        graph = plt.figure()
+        plt.plot(range(len(record_loss_train)), record_loss_train, label="Training")
+        plt.plot(range(len(record_loss_val)), record_loss_val, label="Validation")
+        plt.legend()
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss [m^2/s^4]")
+        plt.title("loss: train=" + str(record_loss_train[-1]) + ", val=" + str(record_loss_val[-1]))
+        graph.savefig("../../graph/" + self.str_hyperparameter + ".png")
+        plt.show()

@@ -85,8 +85,8 @@ if __name__ == '__main__':
     std_element = CFG["hyperparameter"]["std_element"]
     hor_fov_deg = CFG["hyperparameter"]["hor_fov_deg"]
     optimizer_name = CFG["hyperparameter"]["optimizer_name"]
-    lr_cnn = CFG["hyperparameter"]["lr_cnn"]
-    lr_fc = CFG["hyperparameter"]["lr_fc"]
+    lr_cnn = float(CFG["hyperparameter"]["lr_cnn"])
+    lr_fc = float(CFG["hyperparameter"]["lr_fc"])
     batch_size = CFG["hyperparameter"]["batch_size"]
     num_epochs = CFG["hyperparameter"]["num_epochs"]
 
