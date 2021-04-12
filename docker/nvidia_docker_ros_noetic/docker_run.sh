@@ -1,7 +1,7 @@
 #!/bin/bash
 
 image_name = "bnn_attitude_predictor_with_image"
-tag_name = "docker"
+tag_name = "nvidia_docker_noetic"
 root_path = $(pwd)
 
 # /media/amsl/96fde31e-3b9b-4160-8d8a-a4b913579ca2
