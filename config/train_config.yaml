@@ -1,5 +1,5 @@
 method_name: "regression"
-dataset_top_path: "/home/amsl/experiment/dataset_image_to_gravity"
+dataset_top_path: "/home/ssd_dir/dataset_image_to_gravity_ozaki"
 experiment_type: "/stick"
 image_env: "/1cam"
 train: #set sequence

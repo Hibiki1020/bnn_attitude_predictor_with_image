@@ -59,3 +59,5 @@ RUN apt-get update && \
 ########## dnn_attitude_estimation ##########
 ##### NO cache #####
 ARG CACHEBUST=1
+
+WORKDIR /home/ros_catkin_ws
