@@ -66,6 +66,8 @@ if __name__ == '__main__':
     valid_sequences = CFG["valid"]
     csv_name = CFG["csv_name"]
     weights_path = CFG["weights_path"]
+    log_path = CFG["log_path"]
+    graph_path = CFG["graph_path"]
 
     #get train and valid root path
     list_train_rootpaths = []
@@ -159,7 +161,10 @@ if __name__ == '__main__':
         lr_cnn,
         lr_fc,
         batch_size,
-        num_epochs
+        num_epochs,
+        weights_path,
+        log_path,
+        graph_path
     )
 
     trainer.train()
