@@ -38,13 +38,6 @@ if __name__ == '__main__':
         default='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/config/train_config.yaml',
         help='Train hyperparameter config file',
     )
-    parser.add_argument(
-        '--log_place', '-l',
-        type=str,
-        required=False,
-        default='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/weights/test1',
-        help='Place to put trained file',
-    )
 
     FLAGS, unparsed = parser.parse_known_args()
 
@@ -92,28 +85,9 @@ if __name__ == '__main__':
     batch_size = CFG["hyperparameter"]["batch_size"]
     num_epochs = CFG["hyperparameter"]["num_epochs"]
 
-    #Create weights folder
-    try:
-        if FLAGS.log_place == "":
-            
-            if os.path.isdir(FLAGS.log_place):
-                if os.listdir(FLAGS.log_place):
-                    answer = raw_input("Log Directory is not empty. Do you want to proceed? [y/n]  ")
-                    if answer == 'n':
-                        quit()
-                    else:
-                        shutil.rmtree(FLAGS.log_place)
-            os.mkdirs(FLAGS.log_place)
-        else:
-            print("Not creating new log file.")
-    except Exception as e:
-        print(e)
-        print("Error creating log directory. Check permissions!")
-        quit()
-    
     try:
         print("Copy files to %s for further reference." % FLAGS.log_place)
-        copyfile(FLAGS.train_cfg, FLAGS.log_place + "/train_config.yaml")
+        copyfile(FLAGS.train_cfg, log_path + "/train_config.yaml")
     except Exception as e:
         print(e)
         print("Error copying files, check permissions. Exiting....")
