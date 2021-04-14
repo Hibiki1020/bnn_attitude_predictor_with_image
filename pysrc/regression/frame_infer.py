@@ -1,18 +1,24 @@
 import cv2
-from PIL import ImageMsg
+import PIL.Image as Image
 import math
 import numpy as np
-
 import time
+import argparse
+import yaml
+import os
+import csv
 
 import torch
 from torchvision import models
 import torch.nn as nn
 from torchvision import transforms
 
+
+import sys
+sys.path.append('../')
 from common import bnn_network
 
-class BnnAttitudeEstimationWithImageFrame(self, CFG):
+class BnnAttitudeEstimationWithImageFrame:
     def __init__(self, CFG):
         print("BNNAttitudeEstimationWithImageFrame")
         
@@ -24,6 +30,8 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
         self.csv_name = CFG["csv_name"]
         self.weights_top_path = CFG["weights_top_path"]
         self.weights_file_name = CFG["weights_file_name"]
+
+        self.weights_path = os.path.join(self.weights_top_path, self.weights_file_name)
         
         self.log_file_path = CFG["log_file_path"]
         self.log_file_name = CFG["log_file_name"]
@@ -44,7 +52,7 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
         self.expected_value = []
 
         #open_cv
-        self.bridge = CvBridge()
+        #self.bridge = CvBridge()
         self.color_img_cv = np.empty(0)
 
         #BNN
@@ -52,26 +60,27 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
         print("self.device ==> ", self.device)
 
         self.img_transform = self.getImageTransform(self.resize, self.mean_element, self.std_element)
-        self.net = self.getNetwork(self.resize, self.weights_path)
-        self.enable_dropout()
+        self.net = self.getNetwork(self.resize, self.weights_path, self.dropout_rate)
+        
+        self.enable_do = self.enable_dropout()
 
-    def getNetwork(self, resize, weights_path):
+    def getNetwork(self, resize, weights_path, dropout_rate):
         #VGG16を使用した場合
-        net = bnn_network.Network_VGG(resize, dim_fc_out=3, self.dropout_rate,use_pretrained_vgg=False)
+        net = bnn_network.Network(resize, dim_fc_out=3, dropout_rate=dropout_rate, use_pretrained_vgg=False)
         print(net)
 
         net.to(self.device)
         net.eval() #change inference mode
 
         #load
-        if torch.cuda_is_available():
+        if torch.cuda.is_available():
             loaded_weights = torch.load(weights_path)
             print("GPU  ==>  GPU")
         else:
             loaded_weights = torch.load(weights_path, map_location={"cuda:0": "cpu"})
             print("GPU  ==>  CPU")
         
-        nn.load_state_dict(loaded_weights)
+        net.load_state_dict(loaded_weights)
         return net
 
     def getImageTransform(self, resize, mean_element, std_element):
@@ -79,9 +88,9 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
         std = ([std_element, std_element, std_element])
 
         img_transform = transforms.Compose([
-            transforms.Resize(resize)
-            transforms.CenterCrop(resize)
-            transforms.ToTensor()
+            transforms.Resize(resize),
+            transforms.CenterCrop(resize),
+            transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ])
 
@@ -89,9 +98,13 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
 
     def enable_dropout(self):
         #enable dropout when inference
-        for model in self.net.modules():
+        can_dropout = False
+        for module in self.net.modules():
             if module.__class__.__name__.startswith('Dropout'):
                 module.train()
+                can_dropout = True
+
+        return can_dropout
     
     def spin(self):
         data_list = self.get_image_data() #CSVファイル内の画像ファイル名を絶対パスに
@@ -107,7 +120,10 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
 
             print("---------------------")
             self.color_img_cv = cv2.imread(row[3]) #get image data in bgr6
+            inputs_color = self.transformImage()
             print("color_img_cv.shape = ", self.color_img_cv.shape)
+            #print("input image shape  = ", inputs_color)
+            print("Transform input image")
             print("---------------------")
 
             start_clock = time.time()
@@ -115,8 +131,11 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
             output_inference = self.bnnPrediction_Once()
             print("Period [s]: ", time.time() - start_clock)
 
-            expected_value, var_inf = calc_excepted_value_and_variance(list_outputs)
-            epistemic = calc_epistemic(output_inference, expected_value, var_inf)
+            expected_value, var_inf = self.calc_excepted_value_and_variance(list_outputs)
+            epistemic = self.calc_epistemic(output_inference, expected_value, var_inf)
+            print("Variance : ", var_inf)
+            print("Epistemic: ", epistemic)
+            print("---------------------")
 
             #x, y, z, var, epistemic, image_file_name
             tmp_result = [output_inference[0], output_inference[1], output_inference[2], var_inf, epistemic, row[3]]
@@ -127,20 +146,20 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
 
     def save_csv(self, result_csv, data_list):
         
-        result_csv_path = os.path.join(log_file_path, log_file_name)
+        result_csv_path = os.path.join(self.log_file_path, self.log_file_name)
         csv_file = open(result_csv_path, 'w')
         csv_w = csv.writer(csv_file)
 
         for row in result_csv:
-            w.writerow(row)
+            csv_w.writerow(row)
 
-        file.close()
+        csv_file.close()
 
     def bnnPrediction_Once(self):
         inputs_color = self.transformImage()
         print("inputs_color.size() = ", inputs_color.size())
         output_inf = self.net(inputs_color)
-        output = output.cpu().detach().numpy()[0]
+        output = output_inf.cpu().detach().numpy()[0]
 
         return output
 
@@ -155,10 +174,6 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
 
         return list_outputs
 
-    def save_csv(self, result_csv, data_list):
-        print("a")
-
-
     def transformImage(self):
         ## color
         color_img_pil = self.cvToPIL(self.color_img_cv)
@@ -172,6 +187,23 @@ class BnnAttitudeEstimationWithImageFrame(self, CFG):
         img_pil = Image.fromarray(img_cv)
         return img_pil
 
+    def calc_excepted_value_and_variance(self, list_outputs):
+        mean = np.array(list_outputs).mean(0)
+        var = np.var(list_outputs, axis=(0,1))
+
+        return mean, var
+
+    def calc_epistemic(self, output_inference, expected_value, var_inf):
+        #See formulation (4) in Yarin Gal's paper: What Uncertainties Do We Need in Bayesian Deep Learning for Computer Vision
+        out_inf = np.array(output_inference)
+        exp_val = np.array(expected_value)
+        #epistemic = var_inf + output_inference.T * output_inference + expected_value.T * expected_value
+        print("var_inf = ", var_inf)
+        print("out_inf = ",out_inf)
+        print("exp_val = ", exp_val)
+        epistemic = var_inf + np.dot(out_inf.T, out_inf) + np.dot(exp_val.T, exp_val)
+
+        return epistemic
 
     def get_image_data(self):
         image_address_list = []
@@ -194,7 +226,7 @@ if __name__ == '__main__':
         '--frame_infer_config', '-fic',
         type=str,
         required=False,
-        defalut='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/config/frame_infer_config.yaml',
+        default='/home/ros_catkin_ws/src/bnn_attitude_predictor_with_image/config/frame_infer_config.yaml',
         help='Frame infer config yaml file',
     )
 

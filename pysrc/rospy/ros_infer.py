@@ -9,12 +9,17 @@ import cv2
 from PIL import ImageMsg
 import math
 import numpy as np
+import argparse
+import yaml
+import os
 
 import torch
 from torchvision import models
 import torch.nn as nn
 from torchvision import transforms
 
+import sys
+sys.path.append('../')
 from common import bnn_network
 
 class BnnAttitudeEstimationWithImage:
@@ -71,7 +76,7 @@ class BnnAttitudeEstimationWithImage:
         print("self.device ==> ", self.device)
 
         self.img_transform = self.getImageTransform(resize, mean_element, std_element)
-        self.net = self.getNetwork(resize, weights_path)
+        self.net = self.getNetwork(resize, weights_path, dropout_rate)
         self.enable_dropout()
 
     def getImageTransform(self, resize, mean_element, std_element):
@@ -79,31 +84,32 @@ class BnnAttitudeEstimationWithImage:
         std = ([std_element, std_element, std_element])
 
         img_transform = transforms.Compose([
-            transforms.Resize(resize)
-            transforms.CenterCrop(resize)
-            transforms.ToTensor()
+            transforms.Resize(resize),
+            transforms.CenterCrop(resize),
+            transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ])
 
         return img_transform
 
-    def getNetwork(self, resize, weights_path):
+    def getNetwork(self, resize, weights_path, dropout_rate):
         #VGG16を使用した場合
-        net = bnn_network.Network(resize, dim_fc_out=3, self.dropout_rate,use_pretrained_vgg=False)
+        net = bnn_network.Network(resize, dim_fc_out=3, dropout_rate, use_pretrained_vgg=False)
         print(net)
 
         net.to(self.device)
         net.eval() #change inference mode
 
         #load
-        if torch.cuda_is_available():
+        if torch.cuda.is_available():
             loaded_weights = torch.load(weights_path)
             print("GPU  ==>  GPU")
         else:
             loaded_weights = torch.load(weights_path, map_location={"cuda:0": "cpu"})
             print("GPU  ==>  CPU")
         
-        nn.load_state_dict(loaded_weights)
+        #nn.load_state_dict(loaded_weights)
+        net.load_state_dict(loaded_weights)
         return net
     
     def enable_dropout(self):
@@ -148,8 +154,8 @@ class BnnAttitudeEstimationWithImage:
 
 
     def calc_excepted_value_and_variance(self, list_outputs):
-        mean = np.array(outputs).mean(0)
-        var = np.var(outputs, axis=(0,1))
+        mean = np.array(list_outputs).mean(0)
+        var = np.var(list_outputs, axis=(0,1))
 
         return mean, var
     
