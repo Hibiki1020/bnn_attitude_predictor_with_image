@@ -1,6 +1,7 @@
 method_name: "frame_infer"
 
 dataset_frame_path: "/home/ssd_dir/dataset_image_to_gravity_ozaki/stick/1cam/dkan_outdoor_cw"
+#dataset_frame_path: "/home/ssd_dir/dataset_image_to_gravity_ozaki/AirSim/1cam/Neighborhood_1000samples"
 csv_name: "imu_camera.csv"
 
 weights_top_path: "/home/bnn_attitude_predictor_with_image/test2/weights/"
@@ -14,5 +15,5 @@ frame_id: "base_link"
 resize: 224
 mean_element: 0.5
 std_element: 0.5
-num_mcsampling: 25
+num_mcsampling: 30
 dropout_rate: 0.1

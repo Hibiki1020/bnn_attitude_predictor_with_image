@@ -27,6 +27,7 @@ class BnnAttitudeEstimationWithImageFrame:
         self.method_name = CFG["method_name"]
 
         self.dataset_frame_path = CFG["dataset_frame_path"]
+        print(self.dataset_frame_path)
         self.csv_name = CFG["csv_name"]
         self.weights_top_path = CFG["weights_top_path"]
         self.weights_file_name = CFG["weights_file_name"]
@@ -50,6 +51,9 @@ class BnnAttitudeEstimationWithImageFrame:
         self.epistemic = []
 
         self.expected_value = []
+
+        self.mean_epistemic = []
+        self.ave_epistemic = 0.0
 
         #open_cv
         #self.bridge = CvBridge()
@@ -109,7 +113,21 @@ class BnnAttitudeEstimationWithImageFrame:
     def spin(self):
         data_list = self.get_image_data() #CSVファイル内の画像ファイル名を絶対パスに
         result_csv = self.frame_infer(data_list)
+        self.ave_epistemic = self.get_ave_epistemic(self.mean_epistemic)
         self.save_csv(result_csv, data_list)
+
+    def get_ave_epistemic(self, mean_epistemic):
+        ave = 0.0
+        var = 0.0
+
+        ave = np.array(mean_epistemic).mean(0)
+        var = np.var(mean_epistemic)
+
+        print("mean:",ave)
+        print("var :",var)
+
+        return ave
+
 
     def frame_infer(self, data_list):
         print("Start Inference")
@@ -193,16 +211,26 @@ class BnnAttitudeEstimationWithImageFrame:
 
         return mean, var
 
+    def normalize(self, v):
+        l2 = np.linalg.norm(v, ord=2, axis=-1, keepdims=True)
+        l2[l2==0] = 1
+        return v/l2
+
     def calc_epistemic(self, output_inference, expected_value, var_inf):
         #See formulation (4) in Yarin Gal's paper: What Uncertainties Do We Need in Bayesian Deep Learning for Computer Vision
         out_inf = np.array(output_inference)
+        out_inf = self.normalize(out_inf)
+
         exp_val = np.array(expected_value)
+        exp_val = self.normalize(exp_val)
+
         #epistemic = var_inf + output_inference.T * output_inference + expected_value.T * expected_value
         print("var_inf = ", var_inf)
         print("out_inf = ",out_inf)
         print("exp_val = ", exp_val)
         epistemic = var_inf + np.dot(out_inf.T, out_inf) + np.dot(exp_val.T, exp_val)
 
+        self.mean_epistemic.append(epistemic)
         return epistemic
 
     def get_image_data(self):
