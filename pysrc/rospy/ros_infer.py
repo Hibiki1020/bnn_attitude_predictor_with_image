@@ -89,7 +89,7 @@ class BnnAttitudeEstimationWithImage:
 
     def getNetwork(self, resize, weights_path):
         #VGG16を使用した場合
-        net = bnn_network.Network_VGG(resize, dim_fc_out=3, self.dropout_rate,use_pretrained_vgg=False)
+        net = bnn_network.Network(resize, dim_fc_out=3, self.dropout_rate,use_pretrained_vgg=False)
         print(net)
 
         net.to(self.device)
@@ -132,6 +132,20 @@ class BnnAttitudeEstimationWithImage:
 
         except CvBridgeError as e:
             print(e)
+
+    def transformImage(self):
+        ## color
+        color_img_pil = self.cvToPIL(self.color_img_cv)
+        color_img_tensor = self.img_transform(color_img_pil)
+        inputs_color = color_img_tensor.unsqueeze_(0)
+        inputs_color = inputs_color.to(self.device)
+        return inputs_color
+    
+    def cvToPIL(self, img_cv):
+        img_cv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
+        img_pil = Image.fromarray(img_cv)
+        return img_pil
+
 
     def calc_excepted_value_and_variance(self, list_outputs):
         mean = np.array(outputs).mean(0)
