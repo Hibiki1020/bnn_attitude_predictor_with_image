@@ -10,6 +10,49 @@ from torchvision import transforms
 
 from common import bnn_network
 
+class BnnAttitudeEstimationWithImageFrame(self, CFG):
+    def __init__(self, CFG):
+        print("BNNAttitudeEstimationWithImageFrame")
+        
+        self.CFG = CFG
+        #contain yaml data to variance
+        self.method_name = CFG["method_name"]
+
+        self.dataset_frame_path = CFG["dataset_frame_path"]
+        self.csv_name = CFG["csv_name"]
+        self.weights_top_path = CFG["weights_top_path"]
+        self.weights_file_name = CFG["weights_file_name"]
+        
+        self.log_file_path = CFG["log_file_path"]
+        self.log_file_name = CFG["log_file_name"]
+
+        self.frame_id = CFG["frame_id"]
+
+        self.resize = CFG["resize"]
+        self.mean_element = CFG["mean_element"]
+        self.std_element = CFG["std_element"]
+        self.num_mcsampling = CFG["num_mcsampling"]
+        self.dropout_rate = CFG["dropout_rate"]
+
+        #saving parameter in csv file
+        self.v_vector = []
+        self.accel_msg = []
+        self.epistemic = []
+
+        #open_cv
+        self.bridge = CvBridge()
+        self.color_img_cv = np.empty(0)
+
+        #BNN
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        print("self.device ==> ", self.device)
+
+        self.img_transform = self.getImageTransform(resize, mean_element, std_element)
+        self.net = self.getNetwork(resize, weights_path)
+        self.enable_dropout()
+
+
+
 
 if __name__ == '__main__':
     
@@ -34,14 +77,4 @@ if __name__ == '__main__':
         print("Error opening frame infer config file %s", FLAGS.frame_infer_config)
         quit()
 
-    #contain yaml data to variance
-    method_name = CFG["method_name"]
-    
-    dataset_frame_path = CFG["dataset_frame_path"]
-    csv_name = CFG["csv_name"]
-
-    weights_top_path = CFG["weights_top_path"]
-    weights_file_name = CFG["weights_file_name"]
-
-    log_file_path = CFG["log_file_path"]
-    log_file_name = CFG["log_file_name"]
+    bnn_attitude_predictor_with_image_frame = BnnAttitudeEstimationWithImageFrame(CFG)

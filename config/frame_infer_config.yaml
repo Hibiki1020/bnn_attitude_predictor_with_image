@@ -8,3 +8,11 @@ weights_file_name: "regression1775train318valid224resize0.5mean0.5stdAdam1e-05lr
 
 log_file_path: "/home/bnn_attitude_predictor_with_image/test2/infer_log/frame_infer"
 log_file_name: "frame_infer_result.csv"
+
+frame_id: "base_link"
+
+resize: 224
+mean_element: 0.5
+std_element: 0.5
+num_mcsampling: 25
+dropout_rate: 0.1
