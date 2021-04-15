@@ -4,6 +4,7 @@ import rospy
 from sensor_msgs.msg import Image as ImageMsg
 from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import Imu
+from std_msgs.msg import Float32
 
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -22,8 +23,8 @@ from torchvision import transforms
 
 import sys
 
+#Need in running in ROS
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-print(os.getcwd())
 sys.path.append('../')
 from common import bnn_network
 
@@ -33,30 +34,32 @@ class BnnAttitudeEstimationWithImage:
         print("BNN attitude estimation with camera image")
 
         #Parameter of ROS
-        self.frame_id = rospy.get_param("/frame_id", "/base_link")
+        self.frame_id = rospy.get_param('~frame_id', '/base_link')
         print("self.frame_id ==> ", self.frame_id)
 
         #Parameters of BNN
-        weights_path = rospy.get_param("/weights_path", "../../weights.pth")
+        weights_path = rospy.get_param('~weights_path', '/home/bnn_attitude_predictor_with_image/test2/weights/regression1775train318valid224resize0.5mean0.5stdAdam1e-05lrcnn0.0001lrfc70batch50epoch.pth')
         print("weights_path  ==> ", weights_path)
 
-        resize = rospy.get_param("/resize", 224)
+        resize = rospy.get_param('~resize')
         print("reize         ==> ", resize)
 
-        mean_element = rospy.get_param("/mean_element", 0.5)
+        mean_element = rospy.get_param('~mean_element', 0.5)
         print("mean_element  ==> ", mean_element)
 
-        std_element = rospy.get_param("/std_element", 0.5)
+        std_element = rospy.get_param('~std_element', 0.5)
         print("std_element   ==> ", std_element)
 
-        self.num_mcsampling = rospy.get_param("/num_mcsampling", 25)
+        self.num_mcsampling = rospy.get_param('~num_mcsampling', 25)
         print("self.num_mcsampling => ", self.num_mcsampling)
 
-        self.dropout_rate = rospy.get_param("/dropout_rate", 0.1)
+        self.dropout_rate = rospy.get_param('~dropout_rate', 0.1)
         print("self.dropout_rate   => ", self.dropout_rate)
 
+        self.subscribe_topic_name = rospy.get_param('~subscribe_topic_name', '/color_image')
+
         #ROS subscriber
-        self.sub_color_img = rospy.Subscriber("/color_image", ImageMsg, self.callbackColorImage, queue_size=1, buff_size=2**24)
+        self.sub_color_img = rospy.Subscriber( self.subscribe_topic_name, ImageMsg, self.callbackColorImage, queue_size=1, buff_size=2**24)
 
         #ROS publisher
         self.pub_vector = rospy.Publisher("/bnn/g_vector", Vector3Stamped, queue_size=1)
@@ -81,7 +84,7 @@ class BnnAttitudeEstimationWithImage:
         print("self.device ==> ", self.device)
 
         self.img_transform = self.getImageTransform(resize, mean_element, std_element)
-        self.net = self.getNetwork(resize, weights_path, dropout_rate)
+        self.net = self.getNetwork(resize, weights_path, self.dropout_rate)
         self.enable_dropout()
 
     def getImageTransform(self, resize, mean_element, std_element):

@@ -1,6 +1,14 @@
 <launch>
 
     <node pkg="bnn_attitude_predictor_with_image" name="ros_infer" type="ros_infer.py" output="screen">
+        <param name="frame_id" value="/base_link" />
+        <param name="weights_path" value="/home/bnn_attitude_predictor_with_image/test2/weights/regression1775train318valid224resize0.5mean0.5stdAdam1e-05lrcnn0.0001lrfc70batch50epoch.pth" />
+        <param name="resize" value="224" />
+        <param name="mean_element" value="0.5" />
+        <param name="std_element" value="0.5" />
+        <param name="num_sampling" value="30" />
+        <param name="dropout_rate" value="0.1" />
+        <param name="subscribe_topic_name" value="/hoge" />
     </node>
 
 
