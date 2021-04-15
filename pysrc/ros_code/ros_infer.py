@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rospy
 from sensor_msgs.msg import Image as ImageMsg
 from geometry_msgs.msg import Vector3Stamped
@@ -19,6 +21,9 @@ import torch.nn as nn
 from torchvision import transforms
 
 import sys
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+print(os.getcwd())
 sys.path.append('../')
 from common import bnn_network
 
@@ -55,7 +60,7 @@ class BnnAttitudeEstimationWithImage:
 
         #ROS publisher
         self.pub_vector = rospy.Publisher("/bnn/g_vector", Vector3Stamped, queue_size=1)
-        self.pub_accel = rospy.Pulisher("/bnn/g_vector_with_cov", Imu, queue_size=1)
+        self.pub_accel = rospy.Publisher("/bnn/g_vector_with_cov", Imu, queue_size=1)
         self.pub_epistemic = rospy.Publisher("/bnn/epistemic_uncertain", Float32 , queue_size=1)
 
         #msg
@@ -94,7 +99,7 @@ class BnnAttitudeEstimationWithImage:
 
     def getNetwork(self, resize, weights_path, dropout_rate):
         #VGG16を使用した場合
-        net = bnn_network.Network(resize, dim_fc_out=3, dropout_rate, use_pretrained_vgg=False)
+        net = bnn_network.Network(resize, dim_fc_out=3, dropout_rate=dropout_rate, use_pretrained_vgg=False)
         print(net)
 
         net.to(self.device)
@@ -161,9 +166,19 @@ class BnnAttitudeEstimationWithImage:
     
     def calc_epistemic(self, output_inference, expected_value, var_inf):
         #See formulation (4) in Yarin Gal's paper: What Uncertainties Do We Need in Bayesian Deep Learning for Computer Vision
+        out_inf = np.array(output_inference)
+        out_inf = self.normalize(out_inf)
 
-        epistemic = var_inf + output_inference.T * output_inference + expected_value.T * expected_value
+        exp_val = np.array(expected_value)
+        exp_val = self.normalize(exp_val)
 
+        print("var_inf = ", var_inf)
+        print("out_inf = ",out_inf)
+        print("exp_val = ", exp_val)
+        relation = np.array(out_inf - exp_val)
+
+        #epistemic = var_inf + output_inference.T * output_inference + expected_value.T * expected_value
+        epistemic = var_inf + np.dot(relation.T, relation)
         return epistemic
 
     def bnnPrediction_Once(self):
@@ -200,7 +215,7 @@ class BnnAttitudeEstimationWithImage:
         self.v_msg.vector.y = -output_inference[1]
         self.v_msg.vector.z = -output_inference[2]
 
-        self.InputNanToImuMsg(self.accel_msg):
+        self.InputNanToImuMsg(self.accel_msg)
         self.accel_msg.linear_acceleration.x = -output_inference[0]
         self.accel_msg.linear_acceleration.y = -output_inference[1]
         self.accel_msg.linear_acceleration.z = -output_inference[2]
@@ -244,7 +259,7 @@ class BnnAttitudeEstimationWithImage:
 
 def main():
     #Set ip ROS node
-    rospy.init_node('bnn_attitude_estimation_with_image', anonymous=True)
+    rospy.init_node('ros_infer', anonymous=True)
 
     bnn_attitude_estimation_with_image = BnnAttitudeEstimationWithImage()
 

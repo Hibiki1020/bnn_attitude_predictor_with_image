@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="bnn_attitude_predictor_with_image" name="ros_infer" type="ros_infer.py" output="screen">
+    </node>
+
+
+</launch>
