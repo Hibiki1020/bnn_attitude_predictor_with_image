@@ -86,7 +86,7 @@ if __name__ == '__main__':
     num_epochs = CFG["hyperparameter"]["num_epochs"]
 
     try:
-        print("Copy files to %s for further reference." % FLAGS.log_place)
+        print("Copy files to %s for further reference." % log_path)
         copyfile(FLAGS.train_cfg, log_path + "/train_config.yaml")
     except Exception as e:
         print(e)

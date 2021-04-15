@@ -120,8 +120,10 @@ class BnnAttitudeEstimationWithImageFrame:
         ave = 0.0
         var = 0.0
 
+        var_row = np.array(mean_epistemic)
+
         ave = np.array(mean_epistemic).mean(0)
-        var = np.var(mean_epistemic)
+        var = np.var(var_row)
 
         print("mean:",ave)
         print("var :",var)
@@ -228,7 +230,9 @@ class BnnAttitudeEstimationWithImageFrame:
         print("var_inf = ", var_inf)
         print("out_inf = ",out_inf)
         print("exp_val = ", exp_val)
-        epistemic = var_inf + np.dot(out_inf.T, out_inf) + np.dot(exp_val.T, exp_val)
+        relation = np.array(out_inf - exp_val)
+        #epistemic = var_inf + np.dot(out_inf.T, out_inf) - np.dot(exp_val.T, exp_val)
+        epistemic = var_inf + np.dot(relation.T, relation) * 5 # 5 is hyper parameter
 
         self.mean_epistemic.append(epistemic)
         return epistemic

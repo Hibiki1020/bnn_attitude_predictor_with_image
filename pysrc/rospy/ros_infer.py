@@ -6,7 +6,7 @@ from sensor_msgs.msg import Imu
 from cv_bridge import CvBridge, CvBridgeError
 
 import cv2
-from PIL import ImageMsg
+import PIL.Image as Image
 import math
 import numpy as np
 import argparse

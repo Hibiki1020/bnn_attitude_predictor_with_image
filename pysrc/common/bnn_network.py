@@ -32,10 +32,12 @@ class Network(nn.Module):
             #Layer4
             nn.Linear(64, 32),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=dropout_rate),
             
             #Layer5
             nn.Linear(32, 16),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=dropout_rate),
 
             #Final Layer
             nn.Linear(16, dim_fc_out)

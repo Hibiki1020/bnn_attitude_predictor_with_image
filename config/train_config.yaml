@@ -10,7 +10,7 @@ valid:
   - "/dkan_outdoor_cw"
 csv_name: "imu_camera.csv"
 
-"weights_path: "/home/bnn_attitude_predictor_with_image/test2/weights/""
+weights_path: "/home/bnn_attitude_predictor_with_image/test2/weights/"
 log_path: "/home/bnn_attitude_predictor_with_image/test2/log/"
 graph_path: "/home/bnn_attitude_predictor_with_image/test2/graph/"
 
