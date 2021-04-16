@@ -157,6 +157,10 @@ class BnnAttitudeEstimationWithImageFrame:
             print("Epistemic: ", epistemic)
             print("---------------------")
 
+            print("\n")
+            print("\n")
+
+
             #x, y, z, var, epistemic, image_file_name
             tmp_result = [output_inference[0], output_inference[1], output_inference[2], var_inf, epistemic, row[3]]
 

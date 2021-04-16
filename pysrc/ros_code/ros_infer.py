@@ -134,12 +134,20 @@ class BnnAttitudeEstimationWithImage:
 
             print("---------------------")
             start_clock = rospy.get_time()
-            list_outputs,  = self.bnnPrediction()
+            list_outputs = self.bnnPrediction()
             output_inference = self.bnnPrediction_Once()
-            print("Period [s]: ", rospy.get_time - start_clock)
+            print("Period [s]: ", rospy.get_time() - start_clock)
 
-            self.expected_value, var_inf = calc_excepted_value_and_variance(list_outputs)
-            self.epistemic = calc_epistemic(output_inference, self.expected_value, var_inf)
+            self.expected_value, var_inf = self.calc_excepted_value_and_variance(list_outputs)
+            self.epistemic = self.calc_epistemic(output_inference, self.expected_value, var_inf)
+            print("Variance : ", var_inf)
+            print("Epistemic: ", self.epistemic)
+            print("---------------------")
+
+            print("\n")
+            print("\n")
+
+
 
             self.InputToMsg(output_inference, list_outputs)
             self.publication(msg.header.stamp)
@@ -166,6 +174,11 @@ class BnnAttitudeEstimationWithImage:
         var = np.var(list_outputs, axis=(0,1))
 
         return mean, var
+
+    def normalize(self, v):
+        l2 = np.linalg.norm(v, ord=2, axis=-1, keepdims=True)
+        l2[l2==0] = 1
+        return v/l2
     
     def calc_epistemic(self, output_inference, expected_value, var_inf):
         #See formulation (4) in Yarin Gal's paper: What Uncertainties Do We Need in Bayesian Deep Learning for Computer Vision
@@ -188,7 +201,7 @@ class BnnAttitudeEstimationWithImage:
         inputs_color = self.transformImage()
         print("inputs_color.size() = ", inputs_color.size())
         output_inf = self.net(inputs_color)
-        output = output.cpu().detach().numpy()[0]
+        output = output_inf.cpu().detach().numpy()[0]
 
         return output
 
@@ -224,11 +237,8 @@ class BnnAttitudeEstimationWithImage:
         self.accel_msg.linear_acceleration.z = -output_inference[2]
         for i in range(cov.size):
             self.accel_msg.linear_acceleration_covariance[i] = cov[i//3, i%3]
-        ## print
-        print("mean = ", mean)
-        print("cov = ", cov)
 
-    def inputNanToImuMsg(self, imu):
+    def InputNanToImuMsg(self, imu):
         imu.orientation.x = math.nan
         imu.orientation.y = math.nan
         imu.orientation.z = math.nan
