@@ -276,7 +276,7 @@ if __name__ == '__main__':
         print(e)
         print("Error opening frame infer config file %s", FLAGS.frame_infer_config)
         quit()
-        
+
     bnn_attitude_predictor_with_image_frame = BnnAttitudeEstimationWithImageFrame(CFG)
     
     #Get image data and do inference

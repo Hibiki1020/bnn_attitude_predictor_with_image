@@ -10,6 +10,7 @@ root_path=$(pwd)
 xhost +
 docker run -it --rm \
 	--gpus all \
+	--privileged \
 	--env="DISPLAY" \
 	--env="QT_X11_NO_MITSHM=1" \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
