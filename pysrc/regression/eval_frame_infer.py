@@ -70,24 +70,24 @@ class FrameInferEval:
             #pic_path = os.path.join(dataset_data_top_path, row_log[5])
             log_pic = cv2.imread(row_log[5])
             
-            log_x = row_log[0]
-            log_y = row_log[1]
-            log_z = row_log[2]
+            log_x = float(row_log[0])
+            log_y = float(row_log[1])
+            log_z = float(row_log[2])
             log_var = row_log[3]
             log_epistemic = row_log[4]
 
-            data_x = row_dataset[0]
-            data_y = row_dataset[1]
-            data_z = row_dataset[2]
+            data_x = float(row_dataset[0])/10.0
+            data_y = float(row_dataset[1])/10.0
+            data_z = float(row_dataset[2])/10.0
 
-            print(row_log[:3])
-            print(row_dataset[:3])
+            print(log_x, log_y, log_z)
+            print(data_x, data_y, data_z)
 
             print("\n")
 
-            diff_x = abs(float(log_x) - float(data_x)/10.0)
-            diff_y = abs(float(log_y) - float(data_y)/10.0)
-            diff_z = abs(float(log_z) - float(data_z)/10.0)
+            diff_x = abs(float(log_x) - float(data_x))
+            diff_y = abs(float(log_y) - float(data_y))
+            diff_z = abs(float(log_z) - float(data_z))
 
             tmp_bookmark_list = [row_log[5], log_x, log_y, log_z, diff_x, diff_y, diff_z, log_var, log_epistemic]
 

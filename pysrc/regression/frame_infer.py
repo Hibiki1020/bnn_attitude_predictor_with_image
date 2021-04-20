@@ -214,6 +214,7 @@ class BnnAttitudeEstimationWithImageFrame:
     def calc_excepted_value_and_variance(self, list_outputs):
         mean = np.array(list_outputs).mean(0)
         var = np.var(list_outputs, axis=(0,1))
+        #var = np.var(list_outputs, axis=(0))
 
         return mean, var
 

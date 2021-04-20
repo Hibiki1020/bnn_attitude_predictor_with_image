@@ -1,0 +1,33 @@
+<launch>
+
+    <!-- image_transport -->
+    <node pkg="image_transport" type="republish" name="republish_f" args="compressed raw">
+        <remap from="in" to="/realsense_f/color/image_raw"/>
+		<remap from="out" to="/camera_f/decompressed_image"/>
+	</node>
+    <node pkg="image_transport" type="republish" name="republish_l" args="compressed raw">
+		<remap from="in" to="/realsense_l/color/image_raw"/>
+		<remap from="out" to="/camera_l/decompressed_image"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_b" args="compressed raw">
+		<remap from="in" to="/realsense_b/color/image_raw"/>
+		<remap from="out" to="/camera_b/decompressed_image"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_r" args="compressed raw">
+		<remap from="in" to="/realsense_r/color/image_raw"/>
+		<remap from="out" to="/camera_r/decompressed_image"/>
+	</node>
+
+    <node pkg="bnn_attitude_predictor_with_image" name="save_rosmsg" type="save_rosmsg.py" output="screen">
+        <param name="frame_id" value="/base_link" />
+        <param name="1cam_checker" value="True"/>
+        <param name="front_cam_topic" value="/camera_f/decompressed_image" />
+        <param name="left_cam_topic" value="/camera_l/decompressed_image" />
+        <param name="right_cam_topic" value="/camera_r/decompressed_image" />
+        <param name="back_cam_topic" value="/camera_b/decompressed_image" />
+        <param name="velodyne_topic" value="/velodyne_packets" />
+        <param name="imu_topic" value="/imu/data" />
+        <param name="wait_sec" value="5" />
+    </node>
+
+</launch>
