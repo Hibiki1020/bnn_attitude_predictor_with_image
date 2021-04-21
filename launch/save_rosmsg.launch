@@ -18,6 +18,12 @@
 		<remap from="out" to="/camera_r/decompressed_image"/>
 	</node>
 
+    <args name="bag_file_name" default="20210420_143420" />
+    <args name="bagfile_top_path" default="/home/ssd_dir/bagfiles/stick/" />
+    <!--Play Baag Data-->
+    <node name="bag_data" pkg="rosbag" type="play" args="$(arg bagfile_path)$(arg bagfile_name).bag">   
+    </node>
+
     <node pkg="bnn_attitude_predictor_with_image" name="save_rosmsg" type="save_rosmsg.py" output="screen">
         <param name="frame_id" value="/base_link" />
         <param name="1cam_checker" value="True"/>
@@ -28,6 +34,9 @@
         <param name="velodyne_topic" value="/velodyne_packets" />
         <param name="imu_topic" value="/imu/data" />
         <param name="wait_sec" value="5" />
+        <param name="dataset_top_path" value="/home/ssd_dir/dataset_image_to_gravity_ozaki/stick/1cam/$(arg bagfile_name/" />
+        <param name="picname" value="$(arg bagfile_name)" />
+        <param name="csv_name" value="imu_camera.csv" />
     </node>
 
 </launch>

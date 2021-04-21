@@ -48,8 +48,16 @@ class SaveROSMsg:
 
         self.wait_sec = float(rospy.get_param('~wait_sec', '3'))
 
+        self.dataset_top_path = rospy.get_param('~dataset_top_path','/home/ssd_dir/dataset_image_to_gravity_ozaki/stick/1cam/')
+        self.picname = rospy.get_param('~picname', '20210420_143420')
+        self.csv_name = rospy.get_param('~csv_name', 'imu_camera.csv')
+
         self.catch_imu_checker = False
         self.catch_img_checker = False
+
+        self.csv_path = os.path.join(dataset_top_path, csv_name)
+
+        self.picture_counter = 0
 
         if(self.onecam_checker==True):
             #OpenCV
@@ -80,11 +88,26 @@ class SaveROSMsg:
 
             self.catch_img_checker = False
             self.catch_imu_checker = False
+            self.picture_counter += 1
+
         except CvBridgeError as e:
             print(e)
 
     def save_data(self):
-        print("save data")
+        picture_name = self.picname + "picture" + str(self.picture_counter) + ".png"
+        
+        pic_path = os.path.join(self.dataset_top_path, picture_name)
+        csv_path = os.path.join(self.dataset_top_path, self.csv_name)
+
+        with open(csv_path, 'a') as csvfile: # 'a' -> 書き込み用に開き、ファイルが存在する場合は末尾に追記する
+            #この列が書き込まれる
+            tmp_csv_data = [self.imu_data.linear_acceleration.x, self.imu_data.linear_acceleration.y, self.imu_data.linear_acceleration.z, picture_name]
+            cv2.imwrite(pic_path, self.color_img_cv)
+            
+            writer = csv.writer(csvfile)
+            writer.writerow(tmp_csv_data)
+        
+        csvfile.close()
 
 def main():
     rospy.init_node('save_rosmsg', anonymous=True)
