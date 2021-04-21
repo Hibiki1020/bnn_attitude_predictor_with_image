@@ -16,6 +16,7 @@ import argparse
 import yaml
 import os
 import time
+import csv
 
 import torch
 from torchvision import models
@@ -55,7 +56,7 @@ class SaveROSMsg:
         self.catch_imu_checker = False
         self.catch_img_checker = False
 
-        self.csv_path = os.path.join(dataset_top_path, csv_name)
+        self.csv_path = os.path.join(self.dataset_top_path, self.csv_name)
 
         self.picture_counter = 0
 
