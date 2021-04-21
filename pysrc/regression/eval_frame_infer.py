@@ -76,9 +76,9 @@ class FrameInferEval:
             log_var = row_log[3]
             log_epistemic = row_log[4]
 
-            data_x = float(row_dataset[0])/10.0
-            data_y = float(row_dataset[1])/10.0
-            data_z = float(row_dataset[2])/10.0
+            data_x = float(row_dataset[0])/9.8
+            data_y = float(row_dataset[1])/9.8
+            data_z = float(row_dataset[2])/9.8
 
             print(log_x, log_y, log_z)
             print(data_x, data_y, data_z)

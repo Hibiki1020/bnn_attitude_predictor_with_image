@@ -130,6 +130,10 @@ class BnnAttitudeEstimationWithImageFrame:
 
         return ave
 
+    def normalize(self, v):
+        l2 = np.linalg.norm(v, ord=2, axis=-1, keepdims=True)
+        l2[l2==0] = 1
+        return v/l2
 
     def frame_infer(self, data_list):
         print("Start Inference")
@@ -147,8 +151,16 @@ class BnnAttitudeEstimationWithImageFrame:
             print("---------------------")
 
             start_clock = time.time()
-            list_outputs = self.bnnPrediction()
-            output_inference = self.bnnPrediction_Once()
+            list_outputs_tmp = np.array( self.bnnPrediction() )
+            output_inference_tmp = np.array( self.bnnPrediction_Once() )
+
+            output_inference = self.normalize(output_inference_tmp)
+            list_outputs = []
+
+            for output in list_outputs_tmp:
+                tmp_norm = self.normalize(output)
+                list_outputs.append(tmp_norm)
+                
             print("Period [s]: ", time.time() - start_clock)
 
             expected_value, var_inf = self.calc_excepted_value_and_variance(list_outputs)
@@ -167,7 +179,7 @@ class BnnAttitudeEstimationWithImageFrame:
             result_csv.append(tmp_result)
 
         return result_csv
-
+    
     def save_csv(self, result_csv, data_list):
         
         result_csv_path = os.path.join(self.log_file_path, self.log_file_name)
@@ -217,11 +229,6 @@ class BnnAttitudeEstimationWithImageFrame:
         #var = np.var(list_outputs, axis=(0))
 
         return mean, var
-
-    def normalize(self, v):
-        l2 = np.linalg.norm(v, ord=2, axis=-1, keepdims=True)
-        l2[l2==0] = 1
-        return v/l2
 
     def calc_epistemic(self, output_inference, expected_value, var_inf):
         #See formulation (4) in Yarin Gal's paper: What Uncertainties Do We Need in Bayesian Deep Learning for Computer Vision
