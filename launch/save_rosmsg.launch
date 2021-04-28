@@ -18,7 +18,7 @@
 		<remap from="out" to="/camera_r/decompressed_image"/>
 	</node>
 
-    <arg name="bagfile_name" default="20210420_182437" />
+    <arg name="bagfile_name" default="20210422_152411" />
     <arg name="bagfile_top_path" default="/home/ssd_dir/bagfiles/stick/" />
     <!--Play Baag Data-->
     <node name="bag_data" pkg="rosbag" type="play" args="$(arg bagfile_top_path)$(arg bagfile_name).bag">   
@@ -33,10 +33,12 @@
         <param name="back_cam_topic" value="/camera_b/decompressed_image" />
         <param name="velodyne_topic" value="/velodyne_packets" />
         <param name="imu_topic" value="/imu/data" />
-        <param name="wait_sec" value="1" />
+        <param name="wait_sec" value="0.3" />
         <param name="dataset_top_path" value="/home/ssd_dir/dataset_image_to_gravity_ozaki/stick/1cam/$(arg bagfile_name)/" />
         <param name="picname" value="$(arg bagfile_name)" />
         <param name="csv_name" value="imu_camera.csv" />
+        <param name="gvec_min" value="9.7" />
+        <param name="gvec_max" value="9.9" />
     </node>
 
 </launch>

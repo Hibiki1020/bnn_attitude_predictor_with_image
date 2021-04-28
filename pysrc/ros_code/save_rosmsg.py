@@ -53,6 +53,9 @@ class SaveROSMsg:
         self.picname = rospy.get_param('~picname', '20210420_143420')
         self.csv_name = rospy.get_param('~csv_name', 'imu_camera.csv')
 
+        self.gvec_min = float(  rospy.get_param('~gvec_min','0.001')  )
+        self.gvec_max = float(  rospy.get_param('~gvec_max','100.0')  )
+
         self.catch_imu_checker = False
         self.catch_img_checker = False
 
@@ -76,14 +79,33 @@ class SaveROSMsg:
         self.imu_data = msg
         #print("catch imu data")
         self.catch_imu_checker = True
-            
+
+    def gvec_norm(self, imu_data, gvec_min, gvec_max):
+        tmp_csv_data = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z]
+        array = np.array(tmp_csv_data)
+        norm = np.linalg.norm(array, ord=2, axis=-1, keepdims=True)
+
+        print("norm :", norm)
+
+        checker = False
+
+        if norm > gvec_min and norm < gvec_max:
+            checker = True
+        else:
+            checker = False
+        
+        return checker
+
     def callbackColorImage(self, msg):
         try:
             self.color_img_cv = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.catch_img_checker = True
             print("Got Image msg")
 
-            self.save_data()
+            imu_gravity_checker = self.gvec_norm(self.imu_data, self.gvec_min, self.gvec_max)
+
+            if(imu_gravity_checker==True):
+                self.save_data()
             
             time.sleep(self.wait_sec) #wait X sec
 
