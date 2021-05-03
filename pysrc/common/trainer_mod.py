@@ -25,6 +25,10 @@ class Trainer:
         log_path,
         graph_path):
 
+        self.weights_path = weights_path
+        self.log_path = log_path
+        self.graph_path = graph_path
+        
         self.setRandomCondition()
         
         #gpu:0 -> Using GPU number 0
@@ -39,9 +43,7 @@ class Trainer:
         self.num_epochs = num_epochs
         self.str_hyperparameter = self.getStrHyperparameter(method_name, train_dataset, optimizer_name, lr_cnn, lr_fc, batch_size)
 
-        self.weights_path = weights_path
-        self.log_path = log_path
-        self.graph_path = graph_path
+        
         
     def setRandomCondition(self, keep_reproducibility=False): #Random Training Environment
 
